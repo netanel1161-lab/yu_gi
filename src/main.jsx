@@ -3,23 +3,36 @@ import { createRoot } from 'react-dom/client';
 import './index.css';
 import App from './App.jsx';
 
-// Inject Firebase config and admin UID from environment (no secrets in code)
-const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID,
-  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
+// Load Firebase config at runtime from Netlify Function to avoid embedding keys in the bundle
+const loadConfig = async () => {
+  try {
+    const res = await fetch('/.netlify/functions/firebase-config');
+    if (!res.ok) throw new Error(`Config fetch failed: ${res.status}`);
+    const cfg = await res.json();
+
+    window.__firebase_config = {
+      apiKey: cfg.apiKey,
+      authDomain: cfg.authDomain,
+      projectId: cfg.projectId,
+      storageBucket: cfg.storageBucket,
+      messagingSenderId: cfg.messagingSenderId,
+      appId: cfg.appId,
+      measurementId: cfg.measurementId,
+    };
+    window.__app_id = cfg.appIdOverride || 'yu1gi';
+    window.__admin_uid = cfg.adminUid || '';
+
+    createRoot(document.getElementById('root')).render(
+      <StrictMode>
+        <App />
+      </StrictMode>,
+    );
+  } catch (err) {
+    console.error('Failed to load config', err);
+    // Render a minimal error message to the user
+    const root = document.getElementById('root');
+    if (root) root.innerHTML = '<div style="color:white;background:#111;padding:16px;font-family:sans-serif;">Failed to load configuration.</div>';
+  }
 };
 
-window.__firebase_config = firebaseConfig;
-window.__app_id = import.meta.env.VITE_APP_ID || 'yu1gi';
-window.__admin_uid = import.meta.env.VITE_ADMIN_UID || '';
-
-createRoot(document.getElementById('root')).render(
-  <StrictMode>
-    <App />
-  </StrictMode>,
-);
+loadConfig();
