@@ -3,18 +3,20 @@ import { createRoot } from 'react-dom/client';
 import './index.css';
 import App from './App.jsx';
 
-// Inject Firebase config and admin UID before rendering
-window.__firebase_config = {
-  apiKey: "AIzaSyBp-6sQpXEwdHL2Z2VZkJAyxuLmJnk73HI",
-  authDomain: "yu1gi-c2f95.firebaseapp.com",
-  projectId: "yu1gi-c2f95",
-  storageBucket: "yu1gi-c2f95.firebasestorage.app",
-  messagingSenderId: "295551778748",
-  appId: "1:295551778748:web:06f9c762aa1563c6c3b5b9",
-  measurementId: "G-SEG4BHM57Q",
+// Inject Firebase config and admin UID from environment (no secrets in code)
+const firebaseConfig = {
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
 };
-window.__app_id = "yu1gi";
-window.__admin_uid = "EsOtACggw9cNeTFZm0Tf0WWNcRP2";
+
+window.__firebase_config = firebaseConfig;
+window.__app_id = import.meta.env.VITE_APP_ID || 'yu1gi';
+window.__admin_uid = import.meta.env.VITE_ADMIN_UID || '';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
